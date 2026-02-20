@@ -815,7 +815,7 @@
       <div class="stage-num-label">OVERVIEW</div>
     </div>
     <div class="stage-content">
-      <h2 class="stage-title">System Architecture: <span class="accent">The Full Picture</span></h2>
+      <h2 class="stage-title">System Architecture: <span class="accent">Big Picture</span></h2>
       <p class="stage-body">
         Three layers working together, native Swift AR engine on the IPhone, a React Native orchestration layer, and a remote server managing game state. The user interacts through AR, and data flows seamlessly between all three.
       </p>
@@ -908,7 +908,7 @@
     <div class="stage-content">
       <h2 class="stage-title">Before the Game: <span class="accent">Mapping the Room</span></h2>
       <p class="stage-body">
-        Before anyone plays, we walk through the venue with a phone. The camera studies the walls, tables, corners, edges. It builds a 3D understanding of the space, by generating a cloud point and ultimately memorising thousands of visual features.
+        Before anyone plays, we walk through the venue with a phone. The camera studies the walls, tables, corners, edges. It builds a 3D understanding of the space, by generating a point cloud and ultimately memorising thousands of visual features.
         <br><br>
         That scan becomes an ARWorldMap a digital representation of the room. 
       </p>
@@ -929,7 +929,7 @@
       <div class="visual-box">
         <div class="worldmap-viz">
           <div class="feature-dots" id="featureDots"></div>
-          <div class="worldmap-label">GENERATING WORLD MAP...</div>
+          <div class="worldmap-label">GENERATING POINT CLOUD...</div>
         </div>
       </div>
     </div>
@@ -944,7 +944,7 @@
       <div class="stage-num-label">WAKE UP</div>
     </div>
     <div class="stage-content">
-      <h2 class="stage-title">Player Opens AR: <span class="accent">Two Worlds Connect</span></h2>
+      <h2 class="stage-title">Player Joins Game: <span class="accent">Bridge is Established</span></h2>
       <p class="stage-body">
             Think of React Native running the JavaScript as the brain and the Swift the eyes and ears.
         <br><br>
@@ -975,53 +975,16 @@
   </div>
 </section>
 
-<!-- ═══════════ STAGE 3: MAP LOADS ═══════════ -->
-<section class="stage" id="stage3">
-  <div class="stage-inner">
-    <div class="stage-number-col">
-      <div class="stage-num">03</div>
-      <div class="stage-num-label">MAP LOADS</div>
-    </div>
-    <div class="stage-content">
-      <h2 class="stage-title">Loading the Memory: <span class="accent">AR World Comes Alive</span></h2>
-      <p class="stage-body">
-        JavaScript hears the camera ready signal and responds across the bridge: Load the world map.
-        <br><br>
-        Swift opens the ARWorld file deserializes it, and feeds it to ARKit. Basically taking a point cloud and translating it to be accommodated by the Iphone camera. <strong>In short, your Iphone's reality matches the admin's original scan.</strong>
-      </p>
-      <div class="visual-box">
-        <div class="bridge-diagram">
-          <div class="bridge-side js-side">
-            <div class="side-label">JAVASCRIPT</div>
-            <div class="side-desc">&ldquo;Load arworldmap.data&rdquo;</div>
-          </div>
-          <div class="bridge-connector">
-            <svg viewBox="0 0 120 60">
-              <line x1="5" y1="30" x2="115" y2="30" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-              <line x1="5" y1="30" x2="115" y2="30" class="bridge-arrow" stroke="#FF6B35" stroke-width="2"/>
-              <polygon points="112,26 120,30 112,34" fill="#FF6B35" opacity="0.7"/>
-            </svg>
-            <div class="bridge-label">COMMAND</div>
-          </div>
-          <div class="bridge-side swift-side">
-            <div class="side-label">SWIFT</div>
-            <div class="side-desc">Deserializes 57MB<br>ARKit gains memory</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- ═══════════ STAGE 4: RELOCALIsATION ═══════════ -->
+<!-- ═══════════ STAGE 3: RELOCALISATION ═══════════ -->
 <section class="stage" id="stage4">
   <div class="stage-inner">
     <div class="stage-number-col">
-      <div class="stage-num">04</div>
-      <div class="stage-num-label">RELOCALIsE</div>
+      <div class="stage-num">03</div>
+      <div class="stage-num-label">RELOCALISE</div>
     </div>
     <div class="stage-content">
-      <h2 class="stage-title">Finding Itself: <span class="accent">Relocalisation</span></h2>
+      <h2 class="stage-title">Orientation: <span class="accent">Relocalisation</span></h2>
       <p class="stage-body">
         Now the phone plays a game of spot the difference in reverse. It compares what the camera sees against the stored map, looking for matching features: corners, edges, textures, patterns.
         <br><br>
@@ -1072,11 +1035,11 @@
   </div>
 </section>
 
-<!-- ═══════════ STAGE 5: CAPSULES APPEAR ═══════════ -->
+<!-- ═══════════ STAGE 4: CAPSULES APPEAR ═══════════ -->
 <section class="stage" id="stage5">
   <div class="stage-inner">
     <div class="stage-number-col">
-      <div class="stage-num">05</div>
+      <div class="stage-num">04</div>
       <div class="stage-num-label">CAPSULES</div>
     </div>
     <div class="stage-content">
@@ -1096,11 +1059,11 @@
   </div>
 </section>
 
-<!-- ═══════════ STAGE 6: TAP & DISCOVER ═══════════ -->
+<!-- ═══════════ STAGE 5: TAP & DISCOVER ═══════════ -->
 <section class="stage" id="stage6">
   <div class="stage-inner">
     <div class="stage-number-col">
-      <div class="stage-num">06</div>
+      <div class="stage-num">05</div>
       <div class="stage-num-label">DISCOVER</div>
     </div>
     <div class="stage-content">
@@ -1151,7 +1114,7 @@
 <!-- ═══════════ FOOTER ═══════════ -->
 <section class="footer">
   <div class="footer-text">The future is hidden in plain sight.</div>
-  <div class="footer-sub">Capsules &mdash; AR Scavenger Hunt &mdash; Year 2126</div>
+  <div class="footer-sub">Capsules; AR Scavenger Hunt &mdash; Year 2126</div>
 </section>
 
 <!-- ═══════════ TIMELINE SPINE ═══════════ -->
