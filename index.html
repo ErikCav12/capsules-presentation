@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capsules | How the AR Magic Works</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+  :root {
+    --gold: #FFD45A;
+    --gold-dim: #E0B040;
+    --gold-glow: rgba(255, 212, 90, 0.5);
+    --cyan: #33EEFF;
+    --cyan-dim: #1ABFC8;
+    --cyan-glow: rgba(51, 238, 255, 0.35);
+    --magenta: #FF4D8E;
+    --bg-deep: #0A0A1A;
+    --bg-card: rgba(18, 18, 40, 0.9);
+    --text-primary: #F2F2FA;
+    --text-dim: #B0B0CC;
+    --bridge-left: #FF8A55;
+    --bridge-right: #66E0D8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold-dim) var(--bg-deep);
+  }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ── BACKGROUND TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 20%, rgba(245, 197, 66, 0.03) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 70%, rgba(0, 229, 255, 0.03) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 100px, rgba(255,255,255,0.01) 100px, rgba(255,255,255,0.01) 101px),
+      repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(255,255,255,0.01) 100px, rgba(255,255,255,0.01) 101px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .hero-year {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+    letter-spacing: 0.5em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeSlideUp 1s 0.3s ease forwards;
+  }
+
+  .hero-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--gold) 0%, #FFF8DC 40%, var(--gold) 70%, var(--gold-dim) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 30px var(--gold-glow));
+    opacity: 0;
+    animation: fadeSlideUp 1s 0.6s ease forwards;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 2.2vw, 1.5rem);
+    font-weight: 300;
+    color: var(--text-dim);
+    margin-top: 1.5rem;
+    letter-spacing: 0.15em;
+    opacity: 0;
+    animation: fadeSlideUp 1s 0.9s ease forwards;
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeSlideUp 1s 1.4s ease forwards;
+  }
+
+  .hero-scroll span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s ease infinite;
+  }
+
+  /* ── STAGE SECTIONS ── */
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+  }
+
+  .stage-inner {
+    max-width: 1000px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 3rem;
+    align-items: start;
+    opacity: 0;
+    transform: translateY(60px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .stage-inner.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .stage-number-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 0.5rem;
+  }
+
+  .stage-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--gold-dim);
+    opacity: 0.7;
+  }
+
+  .stage-num-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.4em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+
+  .stage-content {
+    position: relative;
+  }
+
+  .stage-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-bottom: 1.5rem;
+  }
+
+  .stage-title .accent { color: var(--gold); }
+  .stage:nth-child(odd) .stage-title .accent { color: var(--cyan); }
+
+  .stage-body {
+    font-size: clamp(1rem, 1.8vw, 1.2rem);
+    font-weight: 400;
+    line-height: 1.8;
+    color: var(--text-dim);
+    max-width: 700px;
+  }
+
+  .stage-body strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .stage-body em {
+    color: var(--gold);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  /* ── VISUAL BOXES ── */
+  .visual-box {
+    margin-top: 2rem;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .visual-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
+    opacity: 0.6;
+  }
+
+  .stage:nth-child(odd) .visual-box::before {
+    background: linear-gradient(90deg, transparent 0%, var(--cyan) 50%, transparent 100%);
+  }
+
+  /* ── BRIDGE DIAGRAM ── */
+  .bridge-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 1.5rem 0;
+  }
+
+  .bridge-side {
+    flex: 1;
+    max-width: 200px;
+    text-align: center;
+    padding: 1.2rem;
+    border-radius: 12px;
+    position: relative;
+  }
+
+  .bridge-side.js-side {
+    background: rgba(255, 138, 85, 0.12);
+    border: 1px solid rgba(255, 138, 85, 0.35);
+  }
+
+  .bridge-side.swift-side {
+    background: rgba(102, 224, 216, 0.12);
+    border: 1px solid rgba(102, 224, 216, 0.35);
+  }
+
+  .bridge-side .side-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+  }
+
+  .js-side .side-label { color: var(--bridge-left); }
+  .swift-side .side-label { color: var(--bridge-right); }
+
+  .bridge-side .side-desc {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  .bridge-connector {
+    width: 120px;
+    height: 60px;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bridge-connector svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .bridge-arrow {
+    stroke-dasharray: 6 4;
+    animation: dashFlow 1.5s linear infinite;
+  }
+
+  .bridge-arrow-reverse {
+    stroke-dasharray: 6 4;
+    animation: dashFlowReverse 1.5s linear infinite;
+  }
+
+  .bridge-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    white-space: nowrap;
+    background: var(--bg-card);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  /* ── WORLD MAP VISUALIZATION ── */
+  .worldmap-viz {
+    height: 160px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .feature-dots {
+    position: relative;
+    width: 280px;
+    height: 140px;
+  }
+
+  .feature-dot {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--cyan);
+    opacity: 0;
+    animation: featurePop 3s ease infinite;
+  }
+
+  .feature-line {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(90deg, var(--cyan-dim), transparent);
+    opacity: 0;
+    animation: lineReveal 3s ease infinite;
+    transform-origin: left center;
+  }
+
+  .worldmap-label {
+    position: absolute;
+    bottom: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+  }
+
+  /* ── CAPSULE GRID ── */
+  .capsule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+    gap: 8px;
+    max-width: 400px;
+  }
+
+  .capsule-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #FFE082, var(--gold), var(--gold-dim));
+    box-shadow: 0 0 12px var(--gold-glow), inset 0 -2px 4px rgba(0,0,0,0.3);
+    animation: capsuleFloat 3s ease infinite;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .capsule-dot:hover {
+    transform: scale(1.3);
+    box-shadow: 0 0 24px var(--gold-glow), 0 0 48px rgba(245, 197, 66, 0.2), inset 0 -2px 4px rgba(0,0,0,0.3);
+  }
+
+  /* ── TAP SEQUENCE ── */
+  .tap-sequence {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .tap-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    padding: 0.5rem 0.8rem;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .tap-step .step-icon {
+    font-size: 1rem;
+  }
+
+  .tap-arrow {
+    color: var(--gold-dim);
+    font-size: 0.8rem;
+  }
+
+  /* ── STAT ROW ── */
+  .stat-row {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stage:nth-child(odd) .stat-value {
+    color: var(--cyan);
+  }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+  }
+
+  /* ── TIMELINE SPINE ── */
+  .timeline-spine {
+    position: fixed;
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    z-index: 100;
+  }
+
+  .spine-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid var(--text-dim);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .spine-dot.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 0 10px var(--gold-glow);
+  }
+
+  .spine-line {
+    width: 1px;
+    height: 20px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+  }
+
+  .footer-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--gold), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .footer-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.4em;
+    color: var(--text-dim);
+    margin-top: 1rem;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50%      { opacity: 0.8; transform: scaleY(1.3); }
+  }
+
+  @keyframes dashFlow {
+    to { stroke-dashoffset: -20; }
+  }
+
+  @keyframes dashFlowReverse {
+    to { stroke-dashoffset: 20; }
+  }
+
+  @keyframes featurePop {
+    0%, 100% { opacity: 0; transform: scale(0); }
+    10%      { opacity: 0.8; transform: scale(1); }
+    70%      { opacity: 0.8; transform: scale(1); }
+    85%      { opacity: 0; transform: scale(0); }
+  }
+
+  @keyframes lineReveal {
+    0%, 100% { opacity: 0; transform: scaleX(0); }
+    15%      { opacity: 0.3; transform: scaleX(1); }
+    65%      { opacity: 0.3; transform: scaleX(1); }
+    80%      { opacity: 0; transform: scaleX(0); }
+  }
+
+  @keyframes capsuleFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+
+  @keyframes rayScan {
+    0%   { left: -20%; opacity: 0; }
+    20%  { opacity: 0.15; }
+    80%  { opacity: 0.15; }
+    100% { left: 120%; opacity: 0; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .stage-inner {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    .stage-number-col {
+      flex-direction: row;
+      gap: 1rem;
+    }
+    .stage-num-label {
+      writing-mode: horizontal-tb;
+    }
+    .timeline-spine { display: none; }
+    .bridge-diagram { flex-direction: column; gap: 1rem; }
+    .bridge-connector { width: 60px; height: 40px; transform: rotate(90deg); }
+    .bridge-side { max-width: 100%; }
+  }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 2rem 0 0.5rem;
+  }
+
+  .arch-device, .arch-server {
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 14px;
+    padding: 1.8rem 1.2rem 1.2rem;
+    position: relative;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .arch-device {
+    flex: 1.3;
+    max-width: 380px;
+  }
+
+  .arch-server {
+    flex: 0.8;
+    max-width: 200px;
+  }
+
+  .arch-device-label {
+    position: absolute;
+    top: -0.55rem;
+    left: 1.2rem;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    background: var(--bg-card);
+    padding: 0 0.5rem;
+  }
+
+  .arch-device-inner {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .arch-block {
+    border-radius: 10px;
+    padding: 1rem 0.8rem 0.8rem;
+    position: relative;
+    flex: 1;
+  }
+
+  .arch-swift {
+    background: rgba(102, 224, 216, 0.1);
+    border: 1px solid rgba(102, 224, 216, 0.35);
+  }
+
+  .arch-rn {
+    background: rgba(255, 138, 85, 0.1);
+    border: 1px solid rgba(255, 138, 85, 0.35);
+  }
+
+  .arch-block-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.7rem;
+    text-align: center;
+  }
+
+  .arch-swift .arch-block-label { color: var(--bridge-right); }
+  .arch-rn .arch-block-label { color: var(--bridge-left); }
+
+  .arch-block-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .arch-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  .arch-chip--nested {
+    padding: 0.35rem 0.5rem 0.45rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .arch-chip-inner {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    width: 100%;
+    text-align: center;
+    letter-spacing: 0.05em;
+    background: rgba(102, 224, 216, 0.2);
+    border: 1px dashed rgba(102, 224, 216, 0.5);
+    color: var(--bridge-right);
+  }
+
+  .arch-chip--teal {
+    background: rgba(102, 224, 216, 0.15);
+    border: 1px solid rgba(102, 224, 216, 0.4);
+    color: var(--bridge-right);
+  }
+
+  .arch-chip--orange {
+    background: rgba(255, 138, 85, 0.15);
+    border: 1px solid rgba(255, 138, 85, 0.4);
+    color: var(--bridge-left);
+  }
+
+  .arch-chip--gold {
+    background: rgba(255, 212, 90, 0.12);
+    border: 1px solid rgba(255, 212, 90, 0.35);
+    color: var(--gold);
+  }
+
+  .arch-bridge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 50px;
+    flex-shrink: 0;
+  }
+
+  .arch-bridge svg {
+    width: 80px;
+    height: 40px;
+  }
+
+  .arch-bridge-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 0.2rem;
+    letter-spacing: 0.1em;
+  }
+
+  .arch-network {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100px;
+    flex-shrink: 0;
+  }
+
+  .arch-network svg {
+    width: 80px;
+    height: 50px;
+  }
+
+  .arch-network-labels {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  .arch-server-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .arch-user {
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 2.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .arch-user svg {
+    width: 130px;
+    height: 90px;
+  }
+
+  @keyframes archPulseRight {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  @keyframes archPulseLeft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .arch-arrow-up, .arch-arrow-down { animation: archPulseRight 2.5s ease infinite; }
+  .arch-arrow-right { animation: archPulseRight 2s ease infinite; }
+  .arch-arrow-left { animation: archPulseLeft 2s ease infinite; }
+
+  @media (max-width: 700px) {
+    .arch-diagram { flex-direction: column; gap: 1rem; }
+    .arch-device-inner { flex-direction: column; gap: 0.5rem; }
+    .arch-bridge { flex-direction: row; width: auto; }
+    .arch-bridge svg { width: 80px; height: 30px; transform: rotate(90deg); }
+    .arch-network svg { transform: rotate(90deg); }
+    .arch-device, .arch-server { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero" id="hero">
+  <div class="hero-year">Transmission from Year 2126</div>
+  <h1 class="hero-title">CAPSULES</h1>
+  <p class="hero-subtitle">How the AR magic works</p>
+  <div class="hero-scroll">
+    <span>Scroll to begin</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ═══════════ SYSTEM ARCHITECTURE ═══════════ -->
+<section class="stage" id="architecture">
+  <div class="stage-inner">
+    <div class="stage-number-col">
+      <div class="stage-num" style="-webkit-text-stroke-color: var(--cyan-dim);">00</div>
+      <div class="stage-num-label">OVERVIEW</div>
+    </div>
+    <div class="stage-content">
+      <h2 class="stage-title">System Architecture: <span class="accent">The Full Picture</span></h2>
+      <p class="stage-body">
+        Three layers working together, native Swift AR engine on the IPhone, a React Native orchestration layer, and a remote server managing game state. The user interacts through AR, and data flows seamlessly between all three.
+      </p>
+      <div class="visual-box">
+        <div class="arch-diagram">
+          <!-- iPhone Container -->
+          <div class="arch-device">
+            <div class="arch-device-label">iPHONE</div>
+            <div class="arch-device-inner">
+              <!-- Swift Block -->
+              <div class="arch-block arch-swift">
+                <div class="arch-block-label">SWIFT</div>
+                <div class="arch-block-items">
+                  <div class="arch-chip arch-chip--teal arch-chip--nested">
+                    ARKit
+                    <div class="arch-chip-inner">ARWorld</div>
+                  </div>
+                  <div class="arch-chip arch-chip--teal">SceneKit</div>
+                </div>
+              </div>
+              <!-- Bridge -->
+              <div class="arch-bridge">
+                <svg viewBox="0 0 100 60" fill="none">
+                  <line x1="10" y1="22" x2="90" y2="22" stroke="var(--bridge-right)" stroke-width="1.5" class="arch-arrow-right"/>
+                  <polygon points="88,18 96,22 88,26" fill="var(--bridge-right)"/>
+                  <line x1="90" y1="38" x2="10" y2="38" stroke="var(--bridge-left)" stroke-width="1.5" class="arch-arrow-left"/>
+                  <polygon points="12,34 4,38 12,42" fill="var(--bridge-left)"/>
+                </svg>
+                <span class="arch-bridge-label">Bridge</span>
+              </div>
+              <!-- React Native Block -->
+              <div class="arch-block arch-rn">
+                <div class="arch-block-label">REACT NATIVE</div>
+                <div class="arch-block-items">
+                  <div class="arch-chip arch-chip--orange">Logic</div>
+                  <div class="arch-chip arch-chip--orange">UI</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Network connection -->
+          <div class="arch-network">
+            <svg viewBox="0 0 100 60" fill="none">
+              <line x1="10" y1="22" x2="90" y2="22" stroke="var(--bridge-left)" stroke-width="1.5" stroke-dasharray="4 3" class="arch-arrow-right"/>
+              <polygon points="88,18 96,22 88,26" fill="var(--bridge-left)"/>
+              <line x1="90" y1="38" x2="10" y2="38" stroke="var(--bridge-right)" stroke-width="1.5" stroke-dasharray="4 3" class="arch-arrow-left"/>
+              <polygon points="12,34 4,38 12,42" fill="var(--bridge-right)"/>
+            </svg>
+            <div class="arch-network-labels">
+              <span>HTTP</span>
+              <span>WebSockets</span>
+            </div>
+          </div>
+          <!-- Server Container -->
+          <div class="arch-server">
+            <div class="arch-device-label">SERVER</div>
+            <div class="arch-server-items">
+              <div class="arch-chip arch-chip--gold">GameState Events</div>
+              <div class="arch-chip arch-chip--gold">Leaderboard</div>
+              <div class="arch-chip arch-chip--gold">CapsuleData</div>
+              <div class="arch-chip arch-chip--gold">PlayerState</div>
+            </div>
+          </div>
+        </div>
+        <!-- User -->
+        <div class="arch-user">
+          <svg viewBox="0 0 120 90" fill="none">
+            <line x1="60" y1="5" x2="28" y2="32" stroke="var(--gold)" stroke-width="1.5" opacity="0.5"/>
+            <line x1="60" y1="5" x2="92" y2="32" stroke="var(--gold)" stroke-width="1.5" opacity="0.5"/>
+            <polygon points="26,28 28,33 32,29" fill="var(--gold)" opacity="0.6"/>
+            <polygon points="88,29 92,33 94,28" fill="var(--gold)" opacity="0.6"/>
+            <circle cx="60" cy="60" r="24" stroke="var(--gold)" stroke-width="1.5" fill="rgba(255, 212, 90, 0.08)"/>
+            <circle cx="60" cy="52" r="7" fill="var(--gold)" opacity="0.4"/>
+            <path d="M44 72 Q44 62 60 62 Q76 62 76 72" stroke="var(--gold)" stroke-width="1.5" fill="var(--gold)" opacity="0.25"/>
+            <text x="60" y="82" text-anchor="middle" fill="var(--gold)" font-family="Orbitron, sans-serif" font-size="8" font-weight="700" letter-spacing="2">USER</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ STAGE 1: THE SCAN ═══════════ -->
+<section class="stage" id="stage1">
+  <div class="stage-inner">
+    <div class="stage-number-col">
+      <div class="stage-num">01</div>
+      <div class="stage-num-label">THE SCAN</div>
+    </div>
+    <div class="stage-content">
+      <h2 class="stage-title">Before the Game: <span class="accent">Mapping the Room</span></h2>
+      <p class="stage-body">
+        Before anyone plays, we walk through the venue with a phone. The camera studies the walls, tables, corners, edges. It builds a 3D understanding of the space, by generating a cloud point and ultimately memorising thousands of visual features.
+        <br><br>
+        That scan becomes an ARWorldMap a digital representation of the room. 
+      </p>
+      <div class="stat-row">
+        <div class="stat-item">
+          <div class="stat-value">57</div>
+          <div class="stat-label">Megabytes</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">17</div>
+          <div class="stat-label">Capsules placed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">3D</div>
+          <div class="stat-label">Coordinates</div>
+        </div>
+      </div>
+      <div class="visual-box">
+        <div class="worldmap-viz">
+          <div class="feature-dots" id="featureDots"></div>
+          <div class="worldmap-label">GENERATING WORLD MAP...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ STAGE 2: THE WAKE UP ═══════════ -->
+<section class="stage" id="stage2">
+  <div class="stage-inner">
+    <div class="stage-number-col">
+      <div class="stage-num">02</div>
+      <div class="stage-num-label">WAKE UP</div>
+    </div>
+    <div class="stage-content">
+      <h2 class="stage-title">Player Opens AR: <span class="accent">Two Worlds Connect</span></h2>
+      <p class="stage-body">
+            Think of React Native running the JavaScript as the brain and the Swift the eyes and ears.
+        <br><br>
+        The first communication is Swift confirming that the camera is up and running.
+    </p>
+      <div class="visual-box">
+        <div class="bridge-diagram">
+          <div class="bridge-side js-side">
+            <div class="side-label">JAVASCRIPT</div>
+            <div class="side-desc">React Native app<br>UI & game logic</div>
+          </div>
+          <div class="bridge-connector">
+            <svg viewBox="0 0 120 60">
+              <line x1="5" y1="25" x2="115" y2="25" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+              <line x1="5" y1="35" x2="115" y2="35" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+              <line x1="5" y1="25" x2="115" y2="25" class="bridge-arrow-reverse" stroke="#4ECDC4" stroke-width="1.5"/>
+              <line x1="5" y1="35" x2="115" y2="35" class="bridge-arrow" stroke="#FF6B35" stroke-width="1.5"/>
+            </svg>
+            <div class="bridge-label">BRIDGE</div>
+          </div>
+          <div class="bridge-side swift-side">
+            <div class="side-label">SWIFT</div>
+            <div class="side-desc">ARKit camera<br>3D rendering</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ STAGE 3: MAP LOADS ═══════════ -->
+<section class="stage" id="stage3">
+  <div class="stage-inner">
+    <div class="stage-number-col">
+      <div class="stage-num">03</div>
+      <div class="stage-num-label">MAP LOADS</div>
+    </div>
+    <div class="stage-content">
+      <h2 class="stage-title">Loading the Memory: <span class="accent">AR World Comes Alive</span></h2>
+      <p class="stage-body">
+        JavaScript hears the camera ready signal and responds across the bridge: Load the world map.
+        <br><br>
+        Swift opens the ARWorld file deserializes it, and feeds it to ARKit. Basically taking a point cloud and translating it to be accommodated by the Iphone camera. <strong>In short, your Iphone's reality matches the admin's original scan.</strong>
+      </p>
+      <div class="visual-box">
+        <div class="bridge-diagram">
+          <div class="bridge-side js-side">
+            <div class="side-label">JAVASCRIPT</div>
+            <div class="side-desc">&ldquo;Load arworldmap.data&rdquo;</div>
+          </div>
+          <div class="bridge-connector">
+            <svg viewBox="0 0 120 60">
+              <line x1="5" y1="30" x2="115" y2="30" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+              <line x1="5" y1="30" x2="115" y2="30" class="bridge-arrow" stroke="#FF6B35" stroke-width="2"/>
+              <polygon points="112,26 120,30 112,34" fill="#FF6B35" opacity="0.7"/>
+            </svg>
+            <div class="bridge-label">COMMAND</div>
+          </div>
+          <div class="bridge-side swift-side">
+            <div class="side-label">SWIFT</div>
+            <div class="side-desc">Deserializes 57MB<br>ARKit gains memory</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ STAGE 4: RELOCALIsATION ═══════════ -->
+<section class="stage" id="stage4">
+  <div class="stage-inner">
+    <div class="stage-number-col">
+      <div class="stage-num">04</div>
+      <div class="stage-num-label">RELOCALIsE</div>
+    </div>
+    <div class="stage-content">
+      <h2 class="stage-title">Finding Itself: <span class="accent">Relocalisation</span></h2>
+      <p class="stage-body">
+        Now the phone plays a game of spot the difference in reverse. It compares what the camera sees against the stored map, looking for matching features: corners, edges, textures, patterns.
+        <br><br>
+        When enough matches are found, it has successfully reclocalised and as a result signals that it is ready to import capsule coordinates.
+      </p>
+      <div class="visual-box" style="overflow:hidden; position:relative;">
+        <div style="display:flex; align-items:center; justify-content:center; height:120px; position:relative;">
+          <div style="
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+          ">
+            <div id="scanRay" style="
+              position: absolute;
+              top: 0; bottom: 0;
+              width: 30%;
+              background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.1), transparent);
+              animation: rayScan 3s ease infinite;
+            "></div>
+          </div>
+          <div style="text-align: center; position: relative; z-index:1;">
+            <div style="
+              font-family: 'Orbitron', sans-serif;
+              font-size: 0.7rem;
+              letter-spacing: 0.3em;
+              color: var(--text-dim);
+              margin-bottom: 0.5rem;
+            ">MATCHING FEATURES</div>
+            <div id="matchCounter" style="
+              font-family: 'Orbitron', sans-serif;
+              font-size: 2.5rem;
+              font-weight: 700;
+              color: var(--cyan);
+              transition: color 0.3s;
+            ">0%</div>
+            <div id="matchStatus" style="
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 0.6rem;
+              letter-spacing: 0.2em;
+              color: var(--text-dim);
+              margin-top: 0.3rem;
+            ">SEARCHING...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ STAGE 5: CAPSULES APPEAR ═══════════ -->
+<section class="stage" id="stage5">
+  <div class="stage-inner">
+    <div class="stage-number-col">
+      <div class="stage-num">05</div>
+      <div class="stage-num-label">CAPSULES</div>
+    </div>
+    <div class="stage-content">
+      <h2 class="stage-title">The Room Comes Alive: <span class="accent">17 Golden Spheres</span></h2>
+      <p class="stage-body">
+        JavaScript sends 17 positions across the bridge to Swift. Each position is an XYZ coordinate.
+        <br><br>
+        Swift creates an anchor at each coordinate, then SceneKit renders <strong>glowing golden spheres</strong> that hover gently in mid-air. The room is now filled with capsules only visible through the phone.
+      </p>
+      <div class="visual-box">
+        <div class="capsule-grid" id="capsuleGrid"></div>
+        <div style="margin-top:1rem; font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.2em;">
+          HOVER TO INSPECT &mdash; 17 CAPSULES PLACED
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ STAGE 6: TAP & DISCOVER ═══════════ -->
+<section class="stage" id="stage6">
+  <div class="stage-inner">
+    <div class="stage-number-col">
+      <div class="stage-num">06</div>
+      <div class="stage-num-label">DISCOVER</div>
+    </div>
+    <div class="stage-content">
+      <h2 class="stage-title">Tap & Discover: <span class="accent">The Reveal</span></h2>
+      <p class="stage-body">
+        The player taps a glowing sphere. SceneKit ray-tracesthe tap point into 3D space and identifies which capsule was hit by its <em>unique ID</em>.
+        <br><br>
+        That ID travels back across the bridge to JavaScript, which looks up the capsule's data from the server. A modal slides up revealing <strong>who this capsule belongs to</strong>; their name, their fun fact, their letter fragment.
+      </p>
+      <div class="visual-box">
+        <div class="tap-sequence">
+          <div class="tap-step"><span class="step-icon">&#9757;</span> Tap</div>
+          <span class="tap-arrow">&#10140;</span>
+          <div class="tap-step"><span class="step-icon">&#9672;</span> Ray trace</div>
+          <span class="tap-arrow">&#10140;</span>
+          <div class="tap-step"><span class="step-icon">&#128273;</span> Find UUID</div>
+          <span class="tap-arrow">&#10140;</span>
+          <div class="tap-step"><span class="step-icon">&#9581;&#9582;</span> Cross bridge</div>
+          <span class="tap-arrow">&#10140;</span>
+          <div class="tap-step"><span class="step-icon">&#128100;</span> Reveal profile</div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+          <div class="bridge-diagram">
+            <div class="bridge-side swift-side">
+              <div class="side-label">SWIFT</div>
+              <div class="side-desc">capsuleId: &ldquo;CE6D...&rdquo;</div>
+            </div>
+            <div class="bridge-connector">
+              <svg viewBox="0 0 120 60">
+                <line x1="5" y1="30" x2="115" y2="30" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                <line x1="5" y1="30" x2="115" y2="30" class="bridge-arrow-reverse" stroke="#4ECDC4" stroke-width="2"/>
+                <polygon points="8,26 0,30 8,34" fill="#4ECDC4" opacity="0.7"/>
+              </svg>
+              <div class="bridge-label">EVENT</div>
+            </div>
+            <div class="bridge-side js-side">
+              <div class="side-label">JAVASCRIPT</div>
+              <div class="side-desc">Look up capsule data<br>Show profile modal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<section class="footer">
+  <div class="footer-text">The future is hidden in plain sight.</div>
+  <div class="footer-sub">Capsules &mdash; AR Scavenger Hunt &mdash; Year 2126</div>
+</section>
+
+<!-- ═══════════ TIMELINE SPINE ═══════════ -->
+<nav class="timeline-spine" id="timelineSpine">
+  <a class="spine-dot active" data-target="hero"></a>
+  <div class="spine-line"></div>
+  <a class="spine-dot" data-target="stage1"></a>
+  <div class="spine-line"></div>
+  <a class="spine-dot" data-target="stage2"></a>
+  <div class="spine-line"></div>
+  <a class="spine-dot" data-target="stage3"></a>
+  <div class="spine-line"></div>
+  <a class="spine-dot" data-target="stage4"></a>
+  <div class="spine-line"></div>
+  <a class="spine-dot" data-target="stage5"></a>
+  <div class="spine-line"></div>
+  <a class="spine-dot" data-target="stage6"></a>
+</nav>
+
+<script>
+  // ── Intersection Observer for stage reveal ──
+  const stageEls = document.querySelectorAll('.stage-inner');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.15 });
+  stageEls.forEach(el => io.observe(el));
+
+  // ── Timeline spine active state ──
+  const sections = ['hero','stage1','stage2','stage3','stage4','stage5','stage6'];
+  const dots = document.querySelectorAll('.spine-dot');
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      document.getElementById(dot.dataset.target)?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  const sectionObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = sections.indexOf(e.target.id);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) sectionObserver.observe(el);
+  });
+
+  // ── Feature dots animation (Stage 1) ──
+  const dotsContainer = document.getElementById('featureDots');
+  if (dotsContainer) {
+    for (let i = 0; i < 30; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'feature-dot';
+      dot.style.left = Math.random() * 260 + 'px';
+      dot.style.top = Math.random() * 120 + 'px';
+      dot.style.animationDelay = (Math.random() * 3) + 's';
+      dotsContainer.appendChild(dot);
+
+      if (i < 15) {
+        const line = document.createElement('div');
+        line.className = 'feature-line';
+        line.style.left = Math.random() * 200 + 'px';
+        line.style.top = Math.random() * 120 + 'px';
+        line.style.width = (20 + Math.random() * 60) + 'px';
+        line.style.transform = `rotate(${Math.random() * 360}deg)`;
+        line.style.animationDelay = (Math.random() * 3) + 's';
+        dotsContainer.appendChild(line);
+      }
+    }
+  }
+
+  // ── Capsule grid (Stage 5) ──
+  const grid = document.getElementById('capsuleGrid');
+  if (grid) {
+    for (let i = 0; i < 17; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'capsule-dot';
+      dot.style.animationDelay = (i * 0.15) + 's';
+      grid.appendChild(dot);
+    }
+  }
+
+  // ── Relocalization counter (Stage 4) ──
+  const counter = document.getElementById('matchCounter');
+  const status = document.getElementById('matchStatus');
+  let matchAnimRunning = false;
+
+  const stage4Observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !matchAnimRunning) {
+        matchAnimRunning = true;
+        let pct = 0;
+        const interval = setInterval(() => {
+          pct += Math.random() * 8;
+          if (pct >= 100) {
+            pct = 100;
+            clearInterval(interval);
+            counter.style.color = '#00FF88';
+            status.textContent = 'RELOCALIZED';
+            status.style.color = '#00FF88';
+            setTimeout(() => {
+              matchAnimRunning = false;
+              counter.style.color = '';
+              status.textContent = 'SEARCHING...';
+              status.style.color = '';
+            }, 3000);
+          }
+          counter.textContent = Math.floor(pct) + '%';
+        }, 120);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  const stage4El = document.getElementById('stage4');
+  if (stage4El) stage4Observer.observe(stage4El);
+</script>
+
+</body>
+</html>
