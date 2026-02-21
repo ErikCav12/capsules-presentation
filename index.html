@@ -101,6 +101,53 @@
     animation: fadeSlideUp 1s 0.9s ease forwards;
   }
 
+  .hero-qr {
+    display: flex;
+    gap: 3rem;
+    margin-top: 2.5rem;
+    opacity: 0;
+    animation: fadeSlideUp 1s 1.1s ease forwards;
+  }
+
+  .hero-qr-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .hero-qr-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .hero-qr-img {
+    width: 130px;
+    height: 130px;
+    border: 1.5px solid var(--gold-dim);
+    border-radius: 10px;
+    padding: 8px;
+    background: #fff;
+  }
+
+  .hero-qr-desc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-align: center;
+    max-width: 140px;
+  }
+
+  @media (max-width: 500px) {
+    .hero-qr { gap: 1.5rem; }
+    .hero-qr-img { width: 100px; height: 100px; }
+  }
+
   .hero-scroll {
     position: absolute;
     bottom: 3rem;
@@ -877,6 +924,18 @@
   <div class="hero-year">Transmission from Year 2126</div>
   <h1 class="hero-title">CAPSULES</h1>
   <p class="hero-subtitle">How the AR magic works</p>
+  <div class="hero-qr">
+    <div class="hero-qr-step">
+      <div class="hero-qr-label">Step 1</div>
+      <img class="hero-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fapps.apple.com%2Fus%2Fapp%2Ftestflight%2Fid899247664" alt="QR: Download TestFlight">
+      <div class="hero-qr-desc">Download TestFlight</div>
+    </div>
+    <div class="hero-qr-step">
+      <div class="hero-qr-label">Step 2</div>
+      <img class="hero-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Ftestflight.apple.com%2Fjoin%2Fpdu16JsM" alt="QR: Join Capsules Beta">
+      <div class="hero-qr-desc">Join Capsules Beta</div>
+    </div>
+  </div>
   <div class="hero-scroll">
     <span>Scroll to begin</span>
     <div class="scroll-line"></div>
