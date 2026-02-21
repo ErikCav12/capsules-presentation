@@ -490,6 +490,82 @@
     background: rgba(255,255,255,0.1);
   }
 
+  /* ── RETRO BOXES ── */
+  .retro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 1.5rem;
+  }
+
+  .retro-box {
+    border-radius: 12px;
+    padding: 1.8rem;
+    border: 1.5px solid;
+  }
+
+  .retro-box--green {
+    border-color: #00FF88;
+    background: rgba(0, 255, 136, 0.06);
+  }
+
+  .retro-box--blue {
+    border-color: var(--cyan);
+    background: rgba(51, 238, 255, 0.06);
+  }
+
+  .retro-box-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .retro-box--green .retro-box-title { color: #00FF88; }
+  .retro-box--blue .retro-box-title { color: var(--cyan); }
+
+  .retro-box ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .retro-box li {
+    font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+    line-height: 1.6;
+    color: var(--text-dim);
+    padding-left: 1.2rem;
+    position: relative;
+  }
+
+  .retro-box--green li::before {
+    content: '>';
+    position: absolute;
+    left: 0;
+    color: #00FF88;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+  }
+
+  .retro-box--blue li::before {
+    content: '>';
+    position: absolute;
+    left: 0;
+    color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+  }
+
+  @media (max-width: 700px) {
+    .retro-grid { grid-template-columns: 1fr; }
+  }
+
   /* ── FOOTER ── */
   .footer {
     text-align: center;
@@ -815,7 +891,7 @@
       <div class="stage-num-label">OVERVIEW</div>
     </div>
     <div class="stage-content">
-      <h2 class="stage-title">System Architecture: <span class="accent">Big Picture</span></h2>
+      <h2 class="stage-title">System Design</h2>
       <p class="stage-body">
         Three layers working together, native Swift AR engine on the IPhone, a React Native orchestration layer, and a remote server managing game state. The user interacts through AR, and data flows seamlessly between all three.
       </p>
@@ -887,7 +963,7 @@
             <line x1="60" y1="5" x2="92" y2="32" stroke="var(--gold)" stroke-width="1.5" opacity="0.5"/>
             <polygon points="26,28 28,33 32,29" fill="var(--gold)" opacity="0.6"/>
             <polygon points="88,29 92,33 94,28" fill="var(--gold)" opacity="0.6"/>
-            <circle cx="60" cy="60" r="24" stroke="var(--gold)" stroke-width="1.5" fill="rgba(255, 212, 90, 0.08)"/>
+            <circle cx="60" cy="62" r="28" stroke="var(--gold)" stroke-width="1.5" fill="rgba(255, 212, 90, 0.08)"/>
             <circle cx="60" cy="52" r="7" fill="var(--gold)" opacity="0.4"/>
             <path d="M44 72 Q44 62 60 62 Q76 62 76 72" stroke="var(--gold)" stroke-width="1.5" fill="var(--gold)" opacity="0.25"/>
             <text x="60" y="82" text-anchor="middle" fill="var(--gold)" font-family="Orbitron, sans-serif" font-size="8" font-weight="700" letter-spacing="2">USER</text>
@@ -906,7 +982,7 @@
       <div class="stage-num-label">THE SCAN</div>
     </div>
     <div class="stage-content">
-      <h2 class="stage-title">Before the Game: <span class="accent">Mapping the Room</span></h2>
+      <h2 class="stage-title">Mapping the Room</h2>
       <p class="stage-body">
         Before anyone plays, we walk through the venue with a phone. The camera studies the walls, tables, corners, edges. It builds a 3D understanding of the space, by generating a point cloud and ultimately memorising thousands of visual features.
         <br><br>
@@ -944,7 +1020,7 @@
       <div class="stage-num-label">WAKE UP</div>
     </div>
     <div class="stage-content">
-      <h2 class="stage-title">Player Joins Game: <span class="accent">Bridge is Established</span></h2>
+      <h2 class="stage-title">Player Joins Game and Establishes Bridge</h2>
       <p class="stage-body">
             Think of React Native running the JavaScript as the brain and the Swift the eyes and ears.
         <br><br>
@@ -984,7 +1060,7 @@
       <div class="stage-num-label">RELOCALISE</div>
     </div>
     <div class="stage-content">
-      <h2 class="stage-title">Orientation: <span class="accent">Relocalisation</span></h2>
+      <h2 class="stage-title">Relocalisation orients the Phone</h2>
       <p class="stage-body">
         Now the phone plays a game of spot the difference in reverse. It compares what the camera sees against the stored map, looking for matching features: corners, edges, textures, patterns.
         <br><br>
@@ -1043,17 +1119,14 @@
       <div class="stage-num-label">CAPSULES</div>
     </div>
     <div class="stage-content">
-      <h2 class="stage-title">The Room Comes Alive: <span class="accent">17 Golden Spheres</span></h2>
+      <h2 class="stage-title">Capsules are Rendered <span class="accent">17 Golden Spheres</span></h2>
       <p class="stage-body">
         JavaScript sends 17 positions across the bridge to Swift. Each position is an XYZ coordinate.
         <br><br>
-        Swift creates an anchor at each coordinate, then SceneKit renders <strong>glowing golden spheres</strong> that hover gently in mid-air. The room is now filled with capsules only visible through the phone.
+        Swift creates an anchor at each coordinate, then SceneKit renders the beautifully crafted capsules that hover gently in mid-air. The room is now filled with capsules only visible through the phone.
       </p>
       <div class="visual-box">
         <div class="capsule-grid" id="capsuleGrid"></div>
-        <div style="margin-top:1rem; font-family:'JetBrains Mono',monospace; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.2em;">
-          HOVER TO INSPECT &mdash; 17 CAPSULES PLACED
-        </div>
       </div>
     </div>
   </div>
@@ -1067,11 +1140,11 @@
       <div class="stage-num-label">DISCOVER</div>
     </div>
     <div class="stage-content">
-      <h2 class="stage-title">Tap & Discover: <span class="accent">The Reveal</span></h2>
+      <h2 class="stage-title">Tap to Reveal</h2>
       <p class="stage-body">
-        The player taps a glowing sphere. SceneKit ray-tracesthe tap point into 3D space and identifies which capsule was hit by its <em>unique ID</em>.
+        The player taps the capsule. SceneKit 'ray-traces' the tap point into 3D space and identifies which capsule was hit by its UUID.
         <br><br>
-        That ID travels back across the bridge to JavaScript, which looks up the capsule's data from the server. A modal slides up revealing <strong>who this capsule belongs to</strong>; their name, their fun fact, their letter fragment.
+        That ID travels back across the bridge to JavaScript, which looks up the capsule's data from the server. A scroll pops up revealing their name, their fun fact, their letter fragment.
       </p>
       <div class="visual-box">
         <div class="tap-sequence">
@@ -1111,6 +1184,37 @@
   </div>
 </section>
 
+<!-- ═══════════ STAGE 7: RETROSPECTIVE ═══════════ -->
+<section class="stage" id="stage7">
+  <div class="stage-inner">
+    <div class="stage-number-col">
+      <div class="stage-num">07</div>
+      <div class="stage-num-label">RETRO</div>
+    </div>
+    <div class="stage-content">
+      <h2 class="stage-title">Retrospective</h2>
+      <div class="retro-grid">
+        <div class="retro-box retro-box--green">
+          <div class="retro-box-title">What Went Well</div>
+          <ul>
+            <li>ARWorldMap relocalization worked reliably across devices</li>
+            <li>Native Swift to React Native bridge performed with minimal latency</li>
+            <li>Socket.io game events synced leaderboard state in real time</li>
+          </ul>
+        </div>
+        <div class="retro-box retro-box--blue">
+          <div class="retro-box-title">Optimisation for Next Time</div>
+          <ul>
+            <li>Pre-cache world map data to reduce initial scan time</li>
+            <li>Add offline fallback for intermittent network conditions</li>
+            <li>Batch capsule open events to reduce server round-trips</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════ FOOTER ═══════════ -->
 <section class="footer">
   <div class="footer-text">The future is hidden in plain sight.</div>
@@ -1132,6 +1236,8 @@
   <a class="spine-dot" data-target="stage5"></a>
   <div class="spine-line"></div>
   <a class="spine-dot" data-target="stage6"></a>
+  <div class="spine-line"></div>
+  <a class="spine-dot" data-target="stage7"></a>
 </nav>
 
 <script>
@@ -1145,7 +1251,7 @@
   stageEls.forEach(el => io.observe(el));
 
   // ── Timeline spine active state ──
-  const sections = ['hero','stage1','stage2','stage3','stage4','stage5','stage6'];
+  const sections = ['hero','stage1','stage2','stage3','stage4','stage5','stage6','stage7'];
   const dots = document.querySelectorAll('.spine-dot');
 
   dots.forEach(dot => {
