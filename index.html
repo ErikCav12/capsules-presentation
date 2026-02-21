@@ -1045,7 +1045,7 @@
       <p class="stage-body">
         Before anyone plays, we walk through the venue with a phone. The camera studies the walls, tables, corners, edges. It builds a 3D understanding of the space, by generating a point cloud and ultimately memorising thousands of visual features.
         <br><br>
-        That scan becomes an ARWorldMap a digital representation of the room. 
+        <strong>Outcome: An ARWorldMap which is a digital representation of the room.</strong>
       </p>
       <div class="stat-row">
         <div class="stat-item">
@@ -1083,7 +1083,7 @@
       <p class="stage-body">
             Think of React Native running the JavaScript as the brain and the Swift the eyes and ears.
         <br><br>
-        The first communication is Swift confirming that the camera is up and running.
+        <strong>Outcome: Bridge established with brain connected to eyes.</strong>
     </p>
       <div class="visual-box">
         <div class="bridge-diagram">
@@ -1123,7 +1123,7 @@
       <p class="stage-body">
         Now the phone plays a game of spot the difference in reverse. It compares what the camera sees against the stored map, looking for matching features: corners, edges, textures, patterns.
         <br><br>
-        When enough matches are found, it has successfully reclocalised and as a result signals that it is ready to import capsule coordinates.
+        <strong>Outcome: IPHone map aligned with original mapping scan</strong>
       </p>
       <div class="visual-box" style="overflow:hidden; position:relative;">
         <div style="display:flex; align-items:center; justify-content:center; height:120px; position:relative;">
@@ -1182,7 +1182,7 @@
       <p class="stage-body">
         JavaScript sends 17 positions across the bridge to Swift. Each position is an XYZ coordinate.
         <br><br>
-        Swift creates an anchor at each coordinate, then SceneKit renders the beautifully crafted capsules that hover gently in mid-air. The room is now filled with capsules only visible through the phone.
+        <strong> Outcome: Rendered capsules in the room, only visible through phone.</strong>
       </p>
       <div class="visual-box">
         <div class="capsule-grid" id="capsuleGrid"></div>
@@ -1203,7 +1203,7 @@
       <p class="stage-body">
         The player taps the capsule. SceneKit 'ray-traces' the tap point into 3D space and identifies which capsule was hit by its UUID.
         <br><br>
-        That ID travels back across the bridge to JavaScript, which looks up the capsule's data from the server. A scroll pops up revealing their name, their fun fact, their letter fragment.
+        <strong>Outcome: Player tap reveals a scroll which has fun facts, and letter fragment.</strong>
       </p>
       <div class="visual-box">
         <div class="tap-sequence">
